@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -15,23 +16,32 @@ func main() {
 
 	jsonString, _ := os.ReadFile("./waypoints.json")
 	data := []Waypoint{}
-	x := json.Unmarshal(jsonString, &data)
-
-	fmt.Println(string(jsonString), x)
+	json.Unmarshal(jsonString, &data)
 
 	//Open a connection to the database
-	db, err := sql.Open("mysql", "root:@tcp(:3306)/EFB")
+	db, err := sql.Open("mysql", "root:XXXX@tcp(XXX.XXX.XXX.XXX:3306)/EFB")
 	if err != nil {
 		fmt.Println(err)
 	}
 	defer db.Close()
-	//Make a Query to the database
-	insert, err := db.Query("INSERT INTO waypoints (name, type, frequency, longitude, latitude) VALUES ('WILLO', 'NDB', 12000, 'test', 'test')")
-	//Close the connection
-	if err != nil {
-		fmt.Println(err)
+
+	currentTime := time.Now()
+
+	//Make a Query to the database for each item
+	for _, waypoint := range data {
+		insert, err := db.Query("INSERT INTO waypoints (name, type, latitude, longitude) VALUES (?, ?, ?, ?)",
+			waypoint.Name,
+			waypoint.NavType,
+			waypoint.Coords[0],
+			waypoint.Coords[1],
+		)
+
+		//Close the connection
+		if err != nil {
+			fmt.Println(err)
+		}
+		insert.Close()
 	}
-	if insert != nil {
-		fmt.Println("Success")
-	}
+
+	fmt.Println("Total Execution Time:", time.Since(currentTime))
 }
