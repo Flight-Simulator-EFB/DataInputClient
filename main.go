@@ -26,7 +26,12 @@ func main() {
 	}
 	defer db.Close()
 	//Make a Query to the database
-	db.Exec("INSERT INTO ")
+	insert, err := db.Query("INSERT INTO waypoints (name, type, frequency, longitude, latitude) VALUES ('WILLO', 'NDB', 12000, 'test', 'test')")
 	//Close the connection
-	db.Close()
+	if err != nil {
+		fmt.Println(err)
+	}
+	if insert != nil {
+		fmt.Println("Success")
+	}
 }
